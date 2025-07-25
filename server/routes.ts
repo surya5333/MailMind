@@ -22,10 +22,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get GPT analysis
       const gptResult = await analyzeEmailWithGPT(sender, subject, body, isTrusted);
 
-      // Combine results - GPT takes precedence for final category
-      const finalCategory = isTrusted ? 'trusted' : gptResult.category;
+      // Combine results and determine final category based on risk score
       const finalRiskScore = isTrusted ? Math.min(gptResult.phishingRiskScore, 15) : 
                             Math.max(mlResult.riskScore, gptResult.phishingRiskScore);
+      
+      let finalCategory: 'trusted' | 'suspicious' | 'spam';
+      if (isTrusted) {
+        finalCategory = 'trusted';
+      } else if (finalRiskScore >= 80) {
+        finalCategory = 'spam';
+      } else if (finalRiskScore >= 20) {
+        finalCategory = 'suspicious';
+      } else {
+        finalCategory = 'trusted';
+      }
 
       // Save email to storage
       const email = await storage.createEmail({
@@ -130,6 +140,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Trusted sender removed successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to remove trusted sender" });
+    }
+  });
+
+  // Update email status (mark safe or block)
+  app.patch("/api/emails/:id/status", async (req, res) => {
+    try {
+      const { action } = req.body;
+      
+      if (!['mark_safe', 'block'].includes(action)) {
+        return res.status(400).json({ message: "Invalid action. Use 'mark_safe' or 'block'" });
+      }
+
+      const email = await storage.getEmailById(req.params.id);
+      if (!email) {
+        return res.status(404).json({ message: "Email not found" });
+      }
+
+      const updatedEmail = await storage.updateEmail(req.params.id, {
+        category: action === 'mark_safe' ? 'trusted' : 'spam',
+        riskScore: action === 'mark_safe' ? 5 : 95,
+        isBlocked: action === 'block'
+      });
+
+      res.json(updatedEmail);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update email status" });
     }
   });
 

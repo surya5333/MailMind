@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -27,6 +27,7 @@ interface EmailCardProps {
 
 export default function EmailCard({ email, onDelete }: EmailCardProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const deleteEmailMutation = useMutation({
     mutationFn: async () => {
@@ -42,6 +43,30 @@ export default function EmailCard({ email, onDelete }: EmailCardProps) {
     onError: (error) => {
       toast({
         title: "Delete Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async (action: 'mark_safe' | 'block') => {
+      await apiRequest("PATCH", `/api/emails/${email.id}/status`, { action });
+    },
+    onSuccess: (_, action) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/emails'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      
+      toast({
+        title: action === 'mark_safe' ? "Email Marked Safe" : "Email Blocked",
+        description: action === 'mark_safe' 
+          ? "Email has been moved to trusted emails." 
+          : "Email has been blocked and moved to spam.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -190,11 +215,21 @@ export default function EmailCard({ email, onDelete }: EmailCardProps) {
               <div className="flex space-x-2">
                 {email.category === 'suspicious' && (
                   <>
-                    <Button size="sm" className="bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30">
+                    <Button 
+                      size="sm" 
+                      className="bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                      onClick={() => updateStatusMutation.mutate('mark_safe')}
+                      disabled={updateStatusMutation.isPending}
+                    >
                       <Check className="mr-1" size={14} />
                       Mark Safe
                     </Button>
-                    <Button size="sm" className="bg-red-500/20 text-red-400 hover:bg-red-500/30">
+                    <Button 
+                      size="sm" 
+                      className="bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                      onClick={() => updateStatusMutation.mutate('block')}
+                      disabled={updateStatusMutation.isPending}
+                    >
                       <Ban className="mr-1" size={14} />
                       Block
                     </Button>
