@@ -59,8 +59,108 @@
 
   body {
     @apply font-sans antialiased text-foreground;
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
     min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .animated-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, #0a0a23 0%, #000000 100%);
+  }
+
+  .animated-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.1) 0%, transparent 50%);
+    animation: nebula 20s ease-in-out infinite alternate;
+  }
+
+  .animated-background::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    transform: translate(-50%, -50%);
+    background: 
+      radial-gradient(circle, transparent 30%, rgba(0, 0, 0, 0.1) 31%, rgba(0, 0, 0, 0.3) 35%, transparent 40%),
+      radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.5) 41%, rgba(0, 0, 0, 0.8) 45%, transparent 50%),
+      radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.9) 51%, rgba(0, 0, 0, 1) 60%, transparent 70%);
+    border-radius: 50%;
+    animation: blackhole 15s linear infinite, blackholeGlow 8s ease-in-out infinite alternate;
+  }
+
+  .stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
+      radial-gradient(1px 1px at 40px 70px, rgba(255, 255, 255, 0.6), transparent),
+      radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.5), transparent),
+      radial-gradient(2px 2px at 130px 80px, rgba(255, 255, 255, 0.7), transparent),
+      radial-gradient(1px 1px at 160px 30px, rgba(255, 255, 255, 0.4), transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: stars 50s linear infinite;
+  }
+
+  @keyframes nebula {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    100% {
+      transform: rotate(360deg) scale(1.1);
+    }
+  }
+
+  @keyframes blackhole {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+
+  @keyframes blackholeGlow {
+    0% {
+      box-shadow: 
+        0 0 50px rgba(75, 0, 130, 0.3),
+        0 0 100px rgba(75, 0, 130, 0.2),
+        0 0 150px rgba(75, 0, 130, 0.1);
+    }
+    100% {
+      box-shadow: 
+        0 0 80px rgba(138, 43, 226, 0.4),
+        0 0 130px rgba(138, 43, 226, 0.3),
+        0 0 200px rgba(138, 43, 226, 0.2);
+    }
+  }
+
+  @keyframes stars {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-100px);
+    }
   }
 }
 
