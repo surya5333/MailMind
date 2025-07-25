@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import EmailInput from "@/components/EmailInput";
 import EmailCard from "@/components/EmailCard";
@@ -12,6 +12,7 @@ import type { Email } from "@shared/schema";
 export default function Dashboard() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'trusted' | 'suspicious' | 'spam'>('all');
   const [isTrustedPanelOpen, setIsTrustedPanelOpen] = useState(false);
+  const emailInputRef = useRef<HTMLDivElement>(null);
 
   const { data: emails = [], refetch: refetchEmails, isLoading } = useQuery<Email[]>({
     queryKey: ['/api/emails'],
@@ -21,6 +22,13 @@ export default function Dashboard() {
     if (activeFilter === 'all') return true;
     return email.category === activeFilter;
   });
+
+  const scrollToEmailInput = () => {
+    emailInputRef.current?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
+  };
 
   return (
     <div className="min-h-screen text-white">
@@ -57,13 +65,15 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar Stats Dashboard */}
         <div className="lg:col-span-1">
-          <StatsPanel />
+          <StatsPanel onAnalyzeNewEmail={scrollToEmailInput} />
         </div>
 
         {/* Main Content Area */}
         <div className="lg:col-span-3 space-y-6">
           {/* Email Input Section */}
-          <EmailInput onEmailAnalyzed={refetchEmails} />
+          <div ref={emailInputRef}>
+            <EmailInput onEmailAnalyzed={refetchEmails} />
+          </div>
 
           {/* Filter Tabs */}
           <FilterTabs activeFilter={activeFilter} onFilterChange={setActiveFilter} />
