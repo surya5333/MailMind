@@ -132,3 +132,8 @@ The application is designed to be easily deployable on platforms like Replit, wi
   - Risk Score < 20: Classified as Trusted/Safe
 - Applied changes to both GPT analysis and ML classifier systems
 - System handles OpenAI quota limits gracefully with ML fallback
+- **Added PostgreSQL database integration:**
+  - Replaced in-memory storage with persistent database storage
+  - Created database connection using Neon serverless PostgreSQL
+  - Pushed schema and initialized with default trusted senders
+  - All email analysis and trusted sender data now persists across sessions
