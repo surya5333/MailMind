@@ -122,3 +122,13 @@ The application follows a full-stack TypeScript architecture with a clear separa
 ```
 
 The application is designed to be easily deployable on platforms like Replit, with automatic database provisioning through Neon and seamless integration between frontend and backend components.
+
+## Recent Changes
+
+**January 25, 2025:**
+- Updated risk scoring thresholds per user preference:
+  - Risk Score ≥ 80: Classified as Spam/Phishing (blocked)
+  - Risk Score ≥ 20: Classified as Suspicious (requires review)
+  - Risk Score < 20: Classified as Trusted/Safe
+- Applied changes to both GPT analysis and ML classifier systems
+- System handles OpenAI quota limits gracefully with ML fallback

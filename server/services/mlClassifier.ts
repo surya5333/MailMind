@@ -70,9 +70,9 @@ export function classifyEmailWithML(
 
   // Determine category
   let category: 'trusted' | 'suspicious' | 'spam';
-  if (riskScore >= 70) {
+  if (riskScore >= 80) {
     category = 'spam';
-  } else if (riskScore >= 35) {
+  } else if (riskScore >= 20) {
     category = 'suspicious';
   } else {
     category = 'trusted';

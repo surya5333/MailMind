@@ -73,7 +73,7 @@ ${body}`;
     let category: 'trusted' | 'suspicious' | 'spam';
     if (result.isSpam || result.phishingRiskScore >= 80) {
       category = 'spam';
-    } else if (result.phishingRiskScore >= 40) {
+    } else if (result.phishingRiskScore >= 20) {
       category = 'suspicious';
     } else {
       category = 'trusted';
@@ -106,7 +106,7 @@ ${body}`;
     let category: 'trusted' | 'suspicious' | 'spam';
     if (isSpam || riskScore >= 80) {
       category = 'spam';
-    } else if (riskScore >= 40) {
+    } else if (riskScore >= 20) {
       category = 'suspicious';
     } else {
       category = 'trusted';
