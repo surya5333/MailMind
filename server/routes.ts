@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { analyzeEmailSchema, insertTrustedSenderSchema } from "@shared/schema";
 import { analyzeEmailWithGPT } from "./services/openai";
 import { classifyEmailWithML } from "./services/mlClassifier";
+import { generateCoachingFeedback, updateUserProgressAfterSession } from "./services/coaching";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -177,6 +178,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  // Coaching API endpoints
+  
+  // Get user progress
+  app.get("/api/coaching/progress", async (req, res) => {
+    try {
+      const userId = 'default_user'; // For now, use a default user
+      let progress = await storage.getUserProgress(userId);
+      
+      if (!progress) {
+        // Initialize progress for new user
+        progress = await storage.updateUserProgress(userId, {
+          userId,
+          totalSessions: 0,
+          correctGuesses: 0,
+          accuracy: 0,
+          streak: 0,
+          level: 0,
+          experience: 0,
+          badges: JSON.stringify([]),
+          weakAreas: JSON.stringify([]),
+          strengths: JSON.stringify([])
+        });
+      }
+
+      // Parse JSON fields
+      const badges = JSON.parse(progress.badges || '[]');
+      const weakAreas = JSON.parse(progress.weakAreas || '[]');
+      const strengths = JSON.parse(progress.strengths || '[]');
+
+      res.json({
+        totalSessions: progress.totalSessions,
+        correctGuesses: progress.correctGuesses,
+        accuracy: progress.accuracy,
+        streak: progress.streak,
+        level: progress.level,
+        experience: progress.experience,
+        badges,
+        weakAreas,
+        strengths
+      });
+    } catch (error) {
+      console.error("Error fetching coaching progress:", error);
+      res.status(500).json({ message: "Failed to fetch progress" });
+    }
+  });
+
+  // Start a new coaching session
+  app.post("/api/coaching/start", async (req, res) => {
+    try {
+      const email = await storage.getRandomEmailForTraining();
+      
+      if (!email) {
+        return res.status(404).json({ message: "No emails available for training" });
+      }
+
+      // Create a simplified email object for training
+      const trainingEmail = {
+        id: email.id,
+        sender: email.sender,
+        subject: email.subject,
+        body: email.body,
+        category: email.category,
+        riskScore: email.riskScore
+      };
+
+      res.json({
+        id: `session_${Date.now()}`,
+        email: trainingEmail
+      });
+    } catch (error) {
+      console.error("Error starting coaching session:", error);
+      res.status(500).json({ message: "Failed to start coaching session" });
+    }
+  });
+
+  // Submit a coaching guess
+  app.post("/api/coaching/submit", async (req, res) => {
+    try {
+      const { sessionId, guess } = req.body;
+      
+      if (!sessionId || !guess) {
+        return res.status(400).json({ message: "Session ID and guess are required" });
+      }
+
+      // For now, we'll need to find the email again based on timing
+      // In a production app, you'd store the session in memory or database
+      const email = await storage.getRandomEmailForTraining();
+      
+      if (!email) {
+        return res.status(404).json({ message: "Email not found" });
+      }
+
+      const feedback = await generateCoachingFeedback(guess, email);
+      
+      // Update user progress
+      const userId = 'default_user';
+      await updateUserProgressAfterSession(userId, feedback.isCorrect, feedback.experience);
+
+      // Create coaching session record
+      await storage.createCoachingSession({
+        emailId: email.id,
+        userGuess: guess,
+        actualCategory: email.category,
+        isCorrect: feedback.isCorrect,
+        feedback: feedback.feedback,
+        learningPoints: JSON.stringify(feedback.learningPoints)
+      });
+
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error submitting coaching guess:", error);
+      res.status(500).json({ message: "Failed to submit guess" });
     }
   });
 

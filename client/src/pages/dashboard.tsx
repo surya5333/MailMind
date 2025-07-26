@@ -5,13 +5,15 @@ import EmailCard from "@/components/EmailCard";
 import FilterTabs from "@/components/FilterTabs";
 import StatsPanel from "@/components/StatsPanel";
 import TrustedSendersPanel from "@/components/TrustedSendersPanel";
+import SafetyCoachingPanel from "@/components/SafetyCoachingPanel";
 import { Button } from "@/components/ui/button";
-import { Settings, Users, Shield } from "lucide-react";
+import { Settings, Users, Shield, GraduationCap } from "lucide-react";
 import type { Email } from "@shared/schema";
 
 export default function Dashboard() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'trusted' | 'suspicious' | 'spam'>('all');
   const [isTrustedPanelOpen, setIsTrustedPanelOpen] = useState(false);
+  const [isCoachingPanelOpen, setIsCoachingPanelOpen] = useState(false);
   const emailInputRef = useRef<HTMLDivElement>(null);
 
   const { data: emails = [], refetch: refetchEmails, isLoading } = useQuery<Email[]>({
@@ -46,9 +48,13 @@ export default function Dashboard() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="glass-card hover:bg-white/20">
-              <Settings className="mr-2" size={16} />
-              Settings
+            <Button 
+              variant="ghost" 
+              className="glass-card hover:bg-white/20"
+              onClick={() => setIsCoachingPanelOpen(true)}
+            >
+              <GraduationCap className="mr-2" size={16} />
+              Safety Coaching
             </Button>
             <Button 
               variant="ghost" 
@@ -57,6 +63,10 @@ export default function Dashboard() {
             >
               <Users className="mr-2" size={16} />
               Trusted Senders
+            </Button>
+            <Button variant="ghost" className="glass-card hover:bg-white/20">
+              <Settings className="mr-2" size={16} />
+              Settings
             </Button>
           </div>
         </div>
@@ -105,11 +115,41 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      
       {/* Trusted Senders Panel */}
       <TrustedSendersPanel 
         isOpen={isTrustedPanelOpen} 
         onClose={() => setIsTrustedPanelOpen(false)} 
       />
+
+      {/* Safety Coaching Side Panel */}
+      {isCoachingPanelOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsCoachingPanelOpen(false)}
+          />
+          
+          {/* Panel */}
+          <div className="relative ml-auto w-full max-w-4xl h-full overflow-y-auto bg-black/90 backdrop-blur-xl border-l border-white/20">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">Email Safety Coaching</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCoachingPanelOpen(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  ✕
+                </Button>
+              </div>
+              <SafetyCoachingPanel />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
