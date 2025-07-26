@@ -13,6 +13,7 @@ export const emails = pgTable("emails", {
   gptReasoning: text("gpt_reasoning"),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
   isBlocked: boolean("is_blocked").default(false).notNull(),
+  isTrustedSender: boolean("is_trusted_sender").default(false).notNull(),
 });
 
 export const trustedSenders = pgTable("trusted_senders", {

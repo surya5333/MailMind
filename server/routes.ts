@@ -22,16 +22,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get GPT analysis
       const gptResult = await analyzeEmailWithGPT(sender, subject, body, isTrusted);
 
-      // Combine results and determine final category based on risk score
-      const finalRiskScore = isTrusted ? Math.min(gptResult.phishingRiskScore, 15) : 
-                            Math.max(mlResult.riskScore, gptResult.phishingRiskScore);
+      // Calculate actual risk score regardless of trusted status
+      const actualRiskScore = Math.max(mlResult.riskScore, gptResult.phishingRiskScore);
       
+      // Determine final category - trusted senders always go to trusted section
       let finalCategory: 'trusted' | 'suspicious' | 'spam';
       if (isTrusted) {
         finalCategory = 'trusted';
-      } else if (finalRiskScore >= 80) {
+      } else if (actualRiskScore >= 80) {
         finalCategory = 'spam';
-      } else if (finalRiskScore >= 20) {
+      } else if (actualRiskScore >= 20) {
         finalCategory = 'suspicious';
       } else {
         finalCategory = 'trusted';
@@ -43,9 +43,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subject,
         body,
         category: finalCategory,
-        riskScore: finalRiskScore,
+        riskScore: actualRiskScore, // Store actual risk score
         gptReasoning: gptResult.reasoning,
-        isBlocked: finalCategory === 'spam'
+        isBlocked: finalCategory === 'spam',
+        isTrustedSender: isTrusted
       });
 
       res.json({

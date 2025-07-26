@@ -78,15 +78,15 @@ export default function EmailCard({ email, onDelete }: EmailCardProps) {
       case 'trusted':
         return {
           icon: Check,
-          label: '✅ Trusted',
+          label: email.isTrustedSender ? '✅ Trusted User' : '✅ Trusted',
           bgColor: 'bg-emerald-500/20 text-emerald-400',
           glowClass: 'trusted-glow',
           gradientFrom: 'from-emerald-400',
           gradientTo: 'to-green-500',
           riskIcon: ShieldCheck,
-          riskColor: 'text-emerald-400',
-          priority: 'High Priority',
-          priorityIcon: Star,
+          riskColor: email.isTrustedSender ? 'text-emerald-400' : (email.riskScore >= 80 ? 'text-red-400' : email.riskScore >= 20 ? 'text-amber-400' : 'text-emerald-400'),
+          priority: email.isTrustedSender ? 'High Priority' : 'Safe Email',
+          priorityIcon: email.isTrustedSender ? Star : ShieldCheck,
           priorityColor: 'text-blue-400'
         };
       case 'suspicious':
