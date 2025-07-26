@@ -40,7 +40,7 @@ export default function Dashboard() {
               <Shield className="text-white" size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Smart Email Prioritizer</h1>
+              <h1 className="text-xl font-bold">Mail Mind</h1>
               <p className="text-xs text-gray-300">AI-Powered Security & Organization</p>
             </div>
           </div>
@@ -61,7 +61,6 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
-
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar Stats Dashboard */}
         <div className="lg:col-span-1">
@@ -106,7 +105,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
       {/* Trusted Senders Panel */}
       <TrustedSendersPanel 
         isOpen={isTrustedPanelOpen} 
